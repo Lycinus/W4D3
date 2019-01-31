@@ -1,5 +1,6 @@
 class SessionsController < ApplicationController
-    
+    before_action :require_logout, only: [:new, :create]
+
     def new
         
     end
@@ -8,8 +9,7 @@ class SessionsController < ApplicationController
         user = User.find_by_credentials(params[:user][:user_name], params[:user][:password])
         
         if user
-            user.reset_session_token!
-            session[:session_token] = user.session_token
+            login_user!(user)
             redirect_to cats_url
         else
             render json: "FAIL"
@@ -24,4 +24,6 @@ class SessionsController < ApplicationController
         end
         redirect_to cats_url
     end
+
+
 end
