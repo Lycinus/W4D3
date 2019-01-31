@@ -1,4 +1,6 @@
 class CatsController < ApplicationController
+  before_action :require_ownership, only: [:edit, :update]
+  
   def index
     @cats = Cat.all
     render :index
@@ -15,7 +17,7 @@ class CatsController < ApplicationController
   end
 
   def create
-    @cat = Cat.new(cat_params)
+    @cat = Cat.new(cat_params.merge({user_id: current_user.id}))
     if @cat.save
       redirect_to cat_url(@cat)
     else
@@ -39,9 +41,15 @@ class CatsController < ApplicationController
     end
   end
 
+  def require_ownership
+    cat = Cat.find(params[:id])
+    redirect_to cats_url unless cat.user_id == current_user.id
+    # current_user.cats.any?{ |cat| cat.user_id == }
+  end
+
   private
 
   def cat_params
-    params.require(:cat).permit(:age, :birth_date, :color, :description, :name, :sex)
+    params.require(:cat).permit(:age, :birth_date, :color, :description, :name, :sex, :user_id)
   end
 end
